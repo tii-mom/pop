@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body {
+    background-color: #080a0f;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+    background-size: 20px 20px;
+    min-height: 100vh;
+    color: #ffffff;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@layer components {
+  /* Clean Modern Arcade tactile keycap button — crisp physical press, zero neon blur */
+  .arcade-btn {
+    @apply bg-pop-lime text-black font-bold border-b-[3px] border-[#76AD10] transition-[transform,filter] duration-100 hover:brightness-95 active:border-b-0 active:translate-y-[2px] disabled:bg-pop-elevated disabled:border-pop-border disabled:text-gray-500 disabled:cursor-not-allowed disabled:active:translate-y-0;
+  }
+
+  .arcade-panel {
+    @apply rounded-2xl border border-pop-border bg-pop-card;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  }
+}
+
+@layer utilities {
+  .perspective-1100 {
+    perspective: 1100px;
+  }
+
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.fruit-bite { position:relative;width:100%;height:100%;isolation:isolate;--piece:ellipse(17% 15% at 72% 39%); }
+.fruit-bite-1 { --piece:ellipse(16% 14% at 54% 33%); }
+.fruit-bite-2 { --piece:polygon(47% 30%,65% 27%,77% 39%,70% 57%,49% 62%,44% 47%); }
+.fruit-bite img { position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none; }
+.bite-before { animation:bite-away .95s both; }
+.bite-result { animation:bite-arrive .95s both; }
+.bite-piece { clip-path:var(--piece);animation:bite-lift .95s both; }
+@keyframes bite-away {0%,22%{opacity:1;transform:scale(1)}32%{opacity:1;transform:scale(.96,1.02)}48%,100%{opacity:0}}
+@keyframes bite-arrive {0%,29%{opacity:0}43%{opacity:1;transform:scale(.94,1.02)}68%{transform:scale(1.025,.98)}100%{opacity:1;transform:none}}
+@keyframes bite-lift {0%,28%{opacity:0;transform:none}32%{opacity:1}72%{opacity:1;transform:translate(12%,-13%) rotate(9deg)}100%{opacity:0;transform:translate(20%,-24%) rotate(18deg) scale(.8)}}
+@media(prefers-reduced-motion:reduce){.fruit-bite img{animation:none}.bite-piece,.bite-before{display:none}}

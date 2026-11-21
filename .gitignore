@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+out/
+artifacts/
+cache/
+typechain-types/
+coverage/
+*.tsbuildinfo
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.sqlite
+*.db
+
+# Logs & OS
+*.log
+.DS_Store
+Thumbs.db
+
+# IDE & agent local state
+.vscode/
+.idea/
+.claude/
+.gemini/

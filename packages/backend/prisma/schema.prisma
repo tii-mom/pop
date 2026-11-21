@@ -1,0 +1,328 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RiskLevel {
+  NORMAL
+  WATCH
+  HIGH
+  BANNED
+}
+
+enum SeasonStatus {
+  UPCOMING
+  PRIORITY
+  PUBLIC
+  SOLD_OUT
+  SETTLED
+}
+
+enum BlindBoxStatus {
+  UNSOLD
+  SEALED
+  LISTED
+  ACTIVE
+  COMPLETED
+  EXPIRED
+}
+
+enum SocialPlatform {
+  X
+  BINANCE_SQUARE
+}
+
+enum ClickSource {
+  TMA
+  WEB
+  EXT
+}
+
+enum MarketListingStatus {
+  OPEN
+  SOLD
+  CANCELLED
+}
+
+enum AssetType {
+  BNB
+  POP
+}
+
+enum LedgerDirection {
+  CREDIT
+  DEBIT
+}
+
+enum PopClaimStatus {
+  SIGNED
+  CONFIRMED
+  EXPIRED_REVERTED
+}
+
+enum BnbWithdrawalStatus {
+  PENDING_AUTO
+  PENDING_REVIEW
+  PROCESSING
+  CONFIRMED
+  REJECTED
+  FAILED
+}
+
+model User {
+  id               String    @id @default(cuid())
+  walletAddress    String?   @unique
+  telegramId       String?   @unique
+  telegramUsername String?
+  xUserId          String?   @unique
+  xUsername        String?
+  xFollowers       Int       @default(0)
+  binanceSquareUrl String?
+  squareFollowers  Int       @default(0)
+  squareVerified   Boolean   @default(false)
+  bnbAvailable     Decimal   @default(0) @db.Decimal(36, 18)
+  bnbLocked        Decimal   @default(0) @db.Decimal(36, 18)
+  popAvailable     Decimal   @default(0) @db.Decimal(36, 18)
+  popPendingClaim  Decimal   @default(0) @db.Decimal(36, 18)
+  popClaimedTotal  Decimal   @default(0) @db.Decimal(36, 18)
+  riskLevel        RiskLevel @default(NORMAL)
+  quizWrongStreak  Int       @default(0)
+  referrerId       String?
+  referrer         User?     @relation("UserReferrals", fields: [referrerId], references: [id])
+  referrals        User[]    @relation("UserReferrals")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  boxes            BlindBox[]
+  clickLogs        ClickLog[]
+  sellListings     MarketListing[] @relation("SellerListings")
+  buyListings      MarketListing[] @relation("BuyerListings")
+  ledgerEntries    LedgerEntry[]
+  popClaims        PopClaim[]
+  bnbDeposits      BnbDeposit[]
+  bnbWithdrawals   BnbWithdrawal[]
+  priorityPasses   PriorityPass[]
+  tgGroups         TgGroup[]
+
+  @@index([riskLevel])
+}
+
+model Season {
+  id                 Int          @id
+  status             SeasonStatus @default(UPCOMING)
+  targetBnb          Decimal      @db.Decimal(36, 18)
+  totalPopAllocated  Decimal      @db.Decimal(36, 18)
+  refPriceBnb        Decimal      @db.Decimal(36, 18)
+  poolCommitHash     String
+  poolSaltEncrypted  String
+  priorityMerkleRoot String       @default("0x0000000000000000000000000000000000000000000000000000000000000000")
+  whaleWhitelistRoot String       @default("0x0000000000000000000000000000000000000000000000000000000000000000")
+  priorityStartAt    DateTime
+  publicStartAt      DateTime
+  endAt              DateTime
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  boxes              BlindBox[]
+  priorityPasses     PriorityPass[]
+}
+
+model BlindBox {
+  id               String          @id @default(cuid())
+  seasonId         Int
+  season           Season          @relation(fields: [seasonId], references: [id])
+  tierId           Int
+  seqIndex         Int
+  totalPopAmount   Decimal         @db.Decimal(36, 18)
+  maxClicks        Int
+  claimedClicks    Int             @default(0)
+  status           BlindBoxStatus  @default(UNSOLD)
+  ownerId          String?
+  owner            User?           @relation(fields: [ownerId], references: [id])
+  purchaseTxHash   String?
+  purchaseLogIndex Int?
+  platform         SocialPlatform?
+  targetUrl        String?
+  externalPostId   String?
+  contentTitle     String?
+  contentSnapshot  String?
+  activatedAt      DateTime?
+  expiresAt        DateTime?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  questions        QuizQuestion[]
+  clickLogs        ClickLog[]
+  listings         MarketListing[]
+
+  @@unique([seasonId, tierId, seqIndex])
+  @@unique([purchaseTxHash, purchaseLogIndex])
+  @@index([ownerId, status])
+  @@index([status, expiresAt])
+  @@index([platform, externalPostId, status])
+}
+
+model QuizQuestion {
+  id           String   @id @default(cuid())
+  boxId        String
+  box          BlindBox @relation(fields: [boxId], references: [id], onDelete: Cascade)
+  questionText String
+  optionsJson  Json
+  correctIndex Int
+  createdAt    DateTime @default(now())
+
+  @@index([boxId])
+}
+
+model ClickLog {
+  id                String      @id @default(cuid())
+  boxId             String
+  box               BlindBox    @relation(fields: [boxId], references: [id])
+  readerId          String
+  reader            User        @relation(fields: [readerId], references: [id])
+  source            ClickSource
+  tgGroupId         String?
+  readerPopEarned   Decimal     @db.Decimal(36, 18)
+  ownerPopUnlocked  Decimal     @db.Decimal(36, 18)
+  bnbCritEarned     Decimal     @default(0) @db.Decimal(36, 18)
+  readDurationMs    Int
+  ipHash            String?
+  deviceFingerprint String?
+  createdAt         DateTime    @default(now())
+
+  @@unique([boxId, readerId])
+  @@index([readerId, createdAt])
+  @@index([createdAt])
+  @@index([ipHash, deviceFingerprint])
+}
+
+model MarketListing {
+  id        String              @id @default(cuid())
+  boxId     String
+  box       BlindBox            @relation(fields: [boxId], references: [id])
+  sellerId  String
+  seller    User                @relation("SellerListings", fields: [sellerId], references: [id])
+  buyerId   String?
+  buyer     User?               @relation("BuyerListings", fields: [buyerId], references: [id])
+  priceBnb  Decimal             @db.Decimal(36, 18)
+  feeBnb    Decimal             @db.Decimal(36, 18)
+  status    MarketListingStatus @default(OPEN)
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+
+  @@index([status, priceBnb])
+  @@index([boxId, status])
+}
+
+model LedgerEntry {
+  id             String          @id @default(cuid())
+  userId         String
+  user           User            @relation(fields: [userId], references: [id])
+  asset          AssetType
+  direction      LedgerDirection
+  amount         Decimal         @db.Decimal(36, 18)
+  balanceAfter   Decimal         @db.Decimal(36, 18)
+  reason         String
+  refId          String?
+  idempotencyKey String          @unique
+  createdAt      DateTime        @default(now())
+
+  @@index([userId, asset, createdAt])
+}
+
+model PopClaim {
+  id            String         @id @default(cuid())
+  userId        String
+  user          User           @relation(fields: [userId], references: [id])
+  walletAddress String
+  amountPop     Decimal        @db.Decimal(36, 18)
+  nonce         BigInt
+  deadline      DateTime
+  signature     String
+  status        PopClaimStatus @default(SIGNED)
+  txHash        String?        @unique
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([userId, status])
+  @@index([status, deadline])
+  @@index([walletAddress, nonce])
+}
+
+model BnbDeposit {
+  id             String   @id @default(cuid())
+  txHash         String   @unique
+  fromAddress    String
+  amountBnb      Decimal  @db.Decimal(36, 18)
+  blockNumber    BigInt
+  creditedUserId String?
+  creditedUser   User?    @relation(fields: [creditedUserId], references: [id])
+  createdAt      DateTime @default(now())
+
+  @@index([fromAddress])
+}
+
+model BnbWithdrawal {
+  id        String              @id @default(cuid())
+  userId    String
+  user      User                @relation(fields: [userId], references: [id])
+  status    BnbWithdrawalStatus @default(PENDING_AUTO)
+  amountBnb Decimal             @db.Decimal(36, 18)
+  toAddress String
+  txHash    String?             @unique
+  riskNotes String?
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+
+  @@index([status, createdAt])
+  @@index([toAddress])
+}
+
+model PriorityPass {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  forSeasonId Int
+  season      Season   @relation(fields: [forSeasonId], references: [id])
+  source      String
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, forSeasonId])
+  @@index([forSeasonId])
+}
+
+model TgGroup {
+  id                String   @id @default(cuid())
+  chatId            String   @unique
+  title             String?
+  ownerUserId       String
+  ownerUser         User     @relation(fields: [ownerUserId], references: [id])
+  memberCount       Int      @default(0)
+  activeUsers3d     Int      @default(0)
+  whitelistGranted  Boolean  @default(false)
+  totalClicksDriven Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model LpSnapshot {
+  id            String   @id @default(cuid())
+  walletAddress String
+  snapshotDate  String
+  bnbValue      Decimal  @db.Decimal(36, 18)
+  qualified     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  @@unique([walletAddress, snapshotDate])
+  @@index([walletAddress, qualified])
+}
+
+model SyncCursor {
+  key         String   @id
+  blockNumber BigInt
+  updatedAt   DateTime @updatedAt
+}

@@ -1,0 +1,94 @@
+export enum RiskLevel {
+  NORMAL = 'NORMAL',
+  WATCH = 'WATCH',
+  HIGH = 'HIGH',
+  BANNED = 'BANNED',
+}
+
+export enum SeasonStatus {
+  UPCOMING = 'UPCOMING',
+  PRIORITY = 'PRIORITY',
+  PUBLIC = 'PUBLIC',
+  SOLD_OUT = 'SOLD_OUT',
+  SETTLED = 'SETTLED',
+}
+
+export enum BoxTierId {
+  MINI = 0,
+  PRO = 1,
+  WHALE = 2,
+}
+
+export enum BlindBoxStatus {
+  UNSOLD = 'UNSOLD',
+  SEALED = 'SEALED',
+  LISTED = 'LISTED',
+  ACTIVE = 'ACTIVE',
+  COMPLETED = 'COMPLETED',
+  EXPIRED = 'EXPIRED',
+}
+
+export enum SocialPlatform {
+  X = 'X',
+  BINANCE_SQUARE = 'BINANCE_SQUARE',
+}
+
+export enum ClickSource {
+  TMA = 'TMA',
+  WEB = 'WEB',
+  EXT = 'EXT',
+}
+
+export enum MarketListingStatus {
+  OPEN = 'OPEN',
+  SOLD = 'SOLD',
+  CANCELLED = 'CANCELLED',
+}
+
+export enum AssetType {
+  BNB = 'BNB',
+  POP = 'POP',
+}
+
+export enum LedgerDirection {
+  CREDIT = 'CREDIT',
+  DEBIT = 'DEBIT',
+}
+
+export enum LedgerReason {
+  BOX_ACTIVATE_INSTANT = 'BOX_ACTIVATE_INSTANT',
+  QUIZ_READER_REWARD = 'QUIZ_READER_REWARD',
+  QUIZ_OWNER_UNLOCK = 'QUIZ_OWNER_UNLOCK',
+  QUIZ_BNB_CRIT = 'QUIZ_BNB_CRIT',
+  MARKET_BUY_DEBIT = 'MARKET_BUY_DEBIT',
+  MARKET_SELL_CREDIT = 'MARKET_SELL_CREDIT',
+  MARKET_FEE = 'MARKET_FEE',
+  BNB_DEPOSIT = 'BNB_DEPOSIT',
+  BNB_WITHDRAW_LOCK = 'BNB_WITHDRAW_LOCK',
+  BNB_WITHDRAW_SETTLE = 'BNB_WITHDRAW_SETTLE',
+  BNB_WITHDRAW_REFUND = 'BNB_WITHDRAW_REFUND',
+  POP_CLAIM_LOCK = 'POP_CLAIM_LOCK',
+  POP_CLAIM_CONFIRM = 'POP_CLAIM_CONFIRM',
+  POP_CLAIM_REVERT = 'POP_CLAIM_REVERT',
+}
+
+export enum PopClaimStatus {
+  SIGNED = 'SIGNED',
+  CONFIRMED = 'CONFIRMED',
+  EXPIRED_REVERTED = 'EXPIRED_REVERTED',
+}
+
+export enum BnbWithdrawalStatus {
+  PENDING_AUTO = 'PENDING_AUTO',
+  PENDING_REVIEW = 'PENDING_REVIEW',
+  PROCESSING = 'PROCESSING',
+  CONFIRMED = 'CONFIRMED',
+  REJECTED = 'REJECTED',
+  FAILED = 'FAILED',
+}
+
+export enum PriorityPassSource {
+  BOX_ACTIVATED = 'BOX_ACTIVATED',
+  LP_SNAPSHOT = 'LP_SNAPSHOT',
+  ADMIN_GRANT = 'ADMIN_GRANT',
+}
